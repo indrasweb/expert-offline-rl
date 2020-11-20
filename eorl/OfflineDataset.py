@@ -1,4 +1,4 @@
-import os, gzip, subprocess
+import os, gzip, subprocess, gc
 import numpy as np
 
 
@@ -40,13 +40,12 @@ class OfflineDataset:
         ls = ls.split('\n')[1:-1]
         return ls
 
-
     def _unzip(self, fn):
         f = gzip.GzipFile(fn, "rb")
-        ds = np.load(f)
+        d = np.load(f)
         f.close()
-        cp = ds[-self.dataset_size:]
-        del ds
+        cp = d[-self.dataset_size:].copy()
+        del d
         return cp
 
 
