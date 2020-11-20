@@ -6,13 +6,13 @@ class OfflineDataset:
 
     def __init__(self, env, dataset_size=200000, train_split=1., obs_only=False, verbose=1):
         """
-        ds = OfflineDataset(
-            env = 'Pong',            # one env only
-            dataset_size = 200000,   # [0, 1e7) frames of atari
-            train_split = 0.9,       # 90% training, 10% held out for testing
-            obs_only = False,        # only get observations (no actions, rewards, dones)
-            verbose = 1              # 0 = silent, >0 for reporting
-        )
+            ds = OfflineDataset(
+                env = 'Pong',            # one env only
+                dataset_size = 200000,   # [0, 1e7) frames of atari
+                train_split = 0.9,       # 90% training, 10% held out for testing
+                obs_only = False,        # only get observations (no actions, rewards, dones)
+                verbose = 1              # 0 = silent, >0 for reporting
+            )
         """
         assert(0 < dataset_size < 1e7), 'dataset_size must be in (0, 1e7)'
         self.dataset_size = dataset_size
@@ -39,6 +39,7 @@ class OfflineDataset:
         ls = stdout.replace('gs://atari-replay-datasets/dqn/', '').replace('/', '')
         ls = ls.split('\n')[1:-1]
         return ls
+
 
     def _unzip(self, fn):
         f = gzip.GzipFile(fn, "rb")
@@ -81,11 +82,11 @@ class OfflineDataset:
 
     def batch(self, batch_size=128, shuffle=False, split='train'):
         """
-        obs, acts, rwds, dones = ds.batch(
-            batch_size = 128   # number of samples
-            shuffle = False    # chronological samples if False, randomly sampled if true
-            split = 'train'    # `train` or `test`; specify split in class constructor
-        )
+            obs, acts, rwds, dones = ds.batch(
+                batch_size = 128   # number of samples
+                shuffle = False    # chronological samples if False, randomly sampled if true
+                split = 'train'    # `train` or `test`; specify split in class constructor
+            )
         if self.only_obs is true, then you only get observations
         """
         if shuffle:
