@@ -1,14 +1,14 @@
-import os, gzip, subprocess, gc
+import os, gzip, subprocess
 import numpy as np
 
 
 class OfflineDataset:
 
-    def __init__(self, env, dataset_size=500000, train_split=1., obs_only=False, verbose=1):
+    def __init__(self, env, dataset_size=200000, train_split=1., obs_only=False, verbose=1):
         """
         ds = OfflineDataset(
             env = 'Pong',            # one env only
-            dataset_size = 500000,   # [0, 1e7) frames of atari
+            dataset_size = 200000,   # [0, 1e7) frames of atari
             train_split = 0.9,       # 90% training, 10% held out for testing
             obs_only = False,        # only get observations (no actions, rewards, dones)
             verbose = 1              # 0 = silent, >0 for reporting

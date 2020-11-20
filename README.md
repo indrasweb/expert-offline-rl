@@ -16,14 +16,16 @@ from eorl import OfflineDataset
 
 ds = OfflineDataset(
     env = 'Pong',            # one env only
-    dataset_size = 500000,   # [0, 1e7) frames of atari
+    dataset_size = 200000,   # [0, 1e7) frames of atari
     train_split = 0.9,       # 90% training, 10% held out for testing
     obs_only = False,        # only get observations (no actions, rewards, dones)
     verbose = 1              # 0 = silent, >0 for reporting
 )
 
-obs, actions, rewards, dones = ds.batch(batch_size=128)
+obs, actions, rewards, dones = ds.batch(batch_size=128, shuffle=False)
 ```
+
+Dataset is loaded into memory. Large `dataset_size` needs large amount of memory.
 
 ### Supported Environments
 
@@ -91,3 +93,7 @@ WizardOfWor
 YarsRevenge
 Zaxxon
 ```
+
+#### Contribute
+
+Could decompress to disk and only load ~50k samples into memory on demand.
