@@ -42,10 +42,12 @@ class OfflineDataset:
 
 
     def _unzip(self, fn):
-        f = gzip.GzipFile(fn, "r")
-        arr = np.load(f)[-self.dataset_size:]
+        f = gzip.GzipFile(fn, "rb")
+        ds = np.load(f).astype(np.uint8)
+        cp = ds[-self.dataset_size:]
+        del ds
         f.close()
-        return arr
+        return cp
 
 
     def _get_dataset(self, env):
