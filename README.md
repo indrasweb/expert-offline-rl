@@ -5,7 +5,7 @@ A simple interface to [batch-rl](https://github.com/google-research/batch_rl). E
 ### Install
 
 ```bash
-$ pip install eorl
+$ pip install git+https://github.com/indrasweb/expert-offline-rl.git
 ```
 
 ### Usage
