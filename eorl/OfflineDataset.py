@@ -136,7 +136,7 @@ class OfflineDataset:
             else:
                 obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask])
                 rest = [self.dataset[c][mask+self.framestack-1] for c in ['action', 'reward', 'terminal']]
-                return obs, *rest
+                return obs, rest[0], rest[1], rest[2]
 
 
 if __name__ == '__main__':
