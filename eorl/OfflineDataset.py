@@ -4,7 +4,13 @@ import numpy as np
 
 class OfflineDataset:
 
-    def __init__(self, env, dataset_size=500000, train_split=1., obs_only=False, framestack=1, verbose=1):
+    def __init__(self,
+                 env,
+                 dataset_size=500000,
+                 train_split=1.,
+                 obs_only=False,
+                 framestack=1,
+                 verbose=1):
         """
             ds = OfflineDataset(
                 env = 'Pong',            # one env only
@@ -16,9 +22,9 @@ class OfflineDataset:
             )
         """
         assert(0 < dataset_size < 1e6), 'dataset_size must be in (0, 1e7)'
-        self.dataset_size = dataset_size - (framestack-1)
+        self.dataset_size = dataset_size - framestack
         assert (0 <= train_split <= 1.), 'train_split must be in [0, 1.]'
-        self._train_hx = int(train_split*dataset_size) - (framestack-1)
+        self._train_hx = int(train_split*dataset_size) - framestack
         self._obs_only = obs_only
         assert (framestack >= 1), 'framestack must be >= 1'
         self.framestack = framestack
@@ -43,32 +49,28 @@ class OfflineDataset:
         ls = ls.split('\n')[1:-1]
         return ls
 
-
-    def _load(self, fn):
-        d = np.load(fn)
+    def _unzip(self, fn):
+        f = gzip.GzipFile(fn, "rb")
+        d = np.load(f)
+        f.close()
         cp = d[-self.dataset_size:].copy()
         del d
         return cp
 
 
-    def _unzip(self, fn_in, fn_out):
-        with gzip.open(fn_in, 'rb') as f_in, open(fn_out, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
-        os.remove(fn_in)
-
-
     def _get_dataset(self, env):
         """ download batch-rl data to /.data if it doesn't already exist """
         want = ['observation'] if self._obs_only else ['observation','action','reward','terminal']
-        fn_ins = [f'./.data/{env}/$store$_{x}_ckpt.50.gz' for x in want]
+        fns = [f'./data/{env}/$store$_{x}_ckpt.50.gz' for x in want]
 
-        if all(os.path.exists(x[:-3]) for x in fn_ins):
-            return {want[i]: self._load(fn_ins[i][:-3]) for i in range(len(want))}
+        if all(os.path.exists(x) for x in fns):
+            if self._verbose: print('decompressing data...')
+            return {want[i]: self._unzip(fns[i]) for i in range(len(want))}
 
-        os.makedirs(f'./.data/{env}', exist_ok=True)
+        os.makedirs(f'./data/{env}', exist_ok=True)
         cmd = ['gsutil', '-m', 'cp', '-R',
                f'gs://atari-replay-datasets/dqn/{env}/1/replay_logs/*50*',
-               f'./.data/{env}']  # 50 is ~expert data
+               f'./data/{env}']  # 50 is ~expert data
 
         if self._verbose: print('downloading data...')
 
@@ -81,15 +83,14 @@ class OfflineDataset:
 
         if 'Operation completed' in stdout+stderr:
             if self._verbose: print('decompressing data...')
-            [self._unzip(fn_ins[i], fn_ins[i][:-3]) for i in range(len(want))]
-            return {want[i]: self._load(fn_ins[i][:-3]) for i in range(len(want))}
+            return {want[i]: self._unzip(fns[i]) for i in range(len(want))}
         else:
             raise Exception(f'gsutil download for {env} failed: \n{stdout}\n{stderr}')
 
 
     def batch(self, batch_size=128, shuffle=False, split='train'):
         """
-            obs, acts, rwds, dones = ds.batch(
+            obs, acts, rwds, dones, next_obs = ds.batch(
                 batch_size = 128   # number of samples
                 shuffle = False    # chronological samples if False, randomly sampled if true
                 split = 'train'    # `train` or `test`; specify split in class constructor
@@ -132,18 +133,22 @@ class OfflineDataset:
                 return np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask])
         else:
             if self.framestack == 1:
-                return tuple(self.dataset[c][mask] for c in ['observation', 'action', 'reward', 'terminal'])
+                obs = self.dataset['observation'][mask]
+                next_obs = self.dataset['observation'][mask+1]
+                rest = [self.dataset[c][mask] for c in ['action', 'reward', 'terminal']]
+                return obs, rest[0], rest[1], rest[2], next_obs
             else:
                 obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask])
+                next_obs = np.stack([self.dataset['observation'][m+1:m+self.framestack+1] for m in mask])
                 rest = [self.dataset[c][mask+self.framestack-1] for c in ['action', 'reward', 'terminal']]
-                return obs, rest[0], rest[1], rest[2]
+                return obs, rest[0], rest[1], rest[2], next_obs
 
 
 if __name__ == '__main__':
     ds = OfflineDataset('Pong', dataset_size=100000, framestack=4)
-    obs, actions, rewards, dones = ds.batch()
+    obs, actions, rewards, dones, next_obs = ds.batch()
     print('obs', obs.shape)
     print('actions', actions.shape)
     print('rewards', rewards.shape)
     print('dones', dones.shape)
-
+    print('next_obs', next_obs.shape)
