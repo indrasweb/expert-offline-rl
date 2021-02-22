@@ -22,9 +22,9 @@ class OfflineDataset:
             )
         """
         assert(0 < dataset_size < 1e6), 'dataset_size must be in (0, 1e7)'
-        self.dataset_size = dataset_size - framestack
+        self.dataset_size = dataset_size - framestack - 2
         assert (0 <= train_split <= 1.), 'train_split must be in [0, 1.]'
-        self._train_hx = int(train_split*dataset_size) - framestack
+        self._train_hx = int(train_split*dataset_size)
         self._obs_only = obs_only
         assert (framestack >= 1), 'framestack must be >= 1'
         self.framestack = framestack
@@ -138,8 +138,8 @@ class OfflineDataset:
                 rest = [self.dataset[c][mask] for c in ['action', 'reward', 'terminal']]
                 return obs, rest[0], rest[1], rest[2], next_obs
             else:
-                obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask if m+self.framestack+1 < self.dataset_size])
-                next_obs = np.stack([self.dataset['observation'][m+1:m+self.framestack+1] for m in mask if m+self.framestack+1 < self.dataset_size])
+                obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask])
+                next_obs = np.stack([self.dataset['observation'][m+1:m+self.framestack+1] for m in mask])
                 rest = [self.dataset[c][mask+self.framestack-1] for c in ['action', 'reward', 'terminal']]
                 return obs, rest[0], rest[1], rest[2], next_obs
 
