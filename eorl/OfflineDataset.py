@@ -138,8 +138,8 @@ class OfflineDataset:
                 rest = [self.dataset[c][mask] for c in ['action', 'reward', 'terminal']]
                 return obs, rest[0], rest[1], rest[2], next_obs
             else:
-                obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask])
-                next_obs = np.stack([self.dataset['observation'][m+1:m+self.framestack+1] for m in mask])
+                obs = np.stack([self.dataset['observation'][m:m+self.framestack] for m in mask if m+self.framestack+1 < self.dataset_size])
+                next_obs = np.stack([self.dataset['observation'][m+1:m+self.framestack+1] for m in mask if m+self.framestack+1 < self.dataset_size])
                 rest = [self.dataset[c][mask+self.framestack-1] for c in ['action', 'reward', 'terminal']]
                 return obs, rest[0], rest[1], rest[2], next_obs
 
