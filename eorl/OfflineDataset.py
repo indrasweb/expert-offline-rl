@@ -22,9 +22,9 @@ class OfflineDataset:
             )
         """
         assert(0 < dataset_size < 1e6), 'dataset_size must be in (0, 1e7)'
-        self.dataset_size = dataset_size - framestack - 2
+        self.dataset_size = dataset_size
         assert (0 <= train_split <= 1.), 'train_split must be in [0, 1.]'
-        self._train_hx = int(train_split*dataset_size)
+        self._train_hx = int(train_split*dataset_size) - framestack - 1
         self._obs_only = obs_only
         assert (framestack >= 1), 'framestack must be >= 1'
         self.framestack = framestack
@@ -101,7 +101,7 @@ class OfflineDataset:
             if split == 'train':
                 mask = np.random.randint(0, self._train_hx, size=batch_size)
             elif split == 'test':
-                mask = np.random.randint(self._train_hx, self.dataset_size, size=batch_size)
+                mask = np.random.randint(self._train_hx, self.dataset_size - self.framestack - 1, size=batch_size)
             else:
                 raise Exception('\'split\' must be either \'train\' or \'test\'')
         else:
@@ -115,7 +115,7 @@ class OfflineDataset:
                     mask = np.arange(self._train_ix, self._train_ix+batch_size)
                     self._train_ix += batch_size
             elif split == 'test':
-                if self._test_ix+batch_size >= self.dataset_size:
+                if self._test_ix+batch_size >= self.dataset_size - self.framestack - 1:
                     wrap = np.arange(self._test_ix, self.dataset_size-1)
                     self._test_ix = self._train_hx + ((self._test_ix+batch_size) % (self.dataset_size-self._train_hx))
                     xtra = np.arange(self._train_hx, self._test_ix)
