@@ -145,10 +145,8 @@ class OfflineDataset:
                     if m+self.framestack+1 < self.dataset_size:
                         obs.append(self.dataset['observation'][m:m+self.framestack])
                         next_obs.append(self.dataset['observation'][m+1:m+self.framestack+1])
-                    act.append(self.dataset['action'][mask+self.framestack-1])
-                    rwd.append(self.dataset['reward'][mask + self.framestack - 1])
-                    done.append(self.dataset['terminal'][mask + self.framestack - 1])
-                return np.stack(obs), act, rwd, done, np.stack(next_obs)
+                rest = [self.dataset[c][mask+self.framestack-1] for c in ['action', 'reward', 'terminal']]
+                return np.stack(obs), rest[0], rest[1], rest[2], np.stack(next_obs)
 
 
 if __name__ == '__main__':
