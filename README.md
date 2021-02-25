@@ -22,7 +22,7 @@ ds = OfflineDataset(
     verbose = 1              # 0 = silent, >0 for reporting
 )
 
-obs, actions, rewards, dones = ds.batch(batch_size=128, shuffle=False)
+obs, actions, rewards, dones, next_obs = ds.batch(batch_size=128, shuffle=False)
 ```
 
 Dataset is loaded into memory. Large `dataset_size` needs large amount of memory.
