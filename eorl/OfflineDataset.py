@@ -72,10 +72,7 @@ class OfflineDataset:
 
 
     @staticmethod
-    def get_root_dir() -> Path:
-        print(Path(__file__).resolve())
-        print(Path(__file__).resolve().parent)
-        print(Path(__file__))
+    def get_module_path() -> Path:
         return Path(__file__).resolve().parent
 
 
@@ -128,16 +125,17 @@ class OfflineDataset:
     def _get_atari_dataset(self, env):
         """ download batch-rl data to /.data if it doesn't already exist """
         want = ['observation'] if self.obs_only else ['observation', 'action', 'reward', 'terminal']
-        fns = [f'./data/{env}/$store$_{x}_ckpt.50.gz' for x in want]
+        data_path = self.get_module_path() / 'data'
+        fns = [data_path/f'{env}/$store$_{x}_ckpt.50.gz' for x in want]
 
         if all(os.path.exists(x) for x in fns):
             if self.verbose: print('decompressing data...')
             return {want[i]: self._unzip(fns[i]) for i in range(len(want))}
 
-        os.makedirs(f'./data/{env}', exist_ok=True)
+        os.makedirs(data_path/env, exist_ok=True)
         cmd = ['gsutil', '-m', 'cp', '-R',
                f'gs://atari-replay-datasets/dqn/{env}/1/replay_logs/*50*',
-               f'./data/{env}']  # 50 is ~expert data
+               data_path/env]  # 50 is ~expert data
 
         if self.verbose:
             print('downloading data...')
@@ -158,7 +156,7 @@ class OfflineDataset:
 
 
     def _get_continuous_dataset(self, env):
-        fn = self.get_root_dir() / f'data/{env}.expert_data.pkl'
+        fn = self.get_module_path() / f'data/{env}.expert_data.pkl'
         with open(fn, 'rb') as f:
             return pkl.load(f)
 
