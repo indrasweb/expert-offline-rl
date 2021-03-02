@@ -188,8 +188,8 @@ class OfflineDataset:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    ds = OfflineDataset('Pong', dataset_size=100000, framestack=4)
-    # ds = OfflineDataset('LunarLanderContinuous-v2', dataset_size=100000, framestack=4)
+    # ds = OfflineDataset('Pong', dataset_size=100000, framestack=4)
+    ds = OfflineDataset('LunarLanderContinuous-v2', dataset_size=100000, framestack=4)
     obs, actions, rewards, dones, next_obs = ds.batch()
     print('obs', obs.shape)
     print('actions', actions.shape)

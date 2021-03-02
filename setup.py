@@ -9,7 +9,8 @@ setup(
   author = 'Harry Songhurst',
   author_email = 'harrysonghurst@gmail.com',
   url = 'https://github.com/indrasweb/expert-offline-rl',
-  keywords = ['self-supervised learning', 'contrastive learning', 'offline RL', 'reinforcement learning'],
+  keywords = ['self-supervised learning', 'contrastive learning', 'imitation learning', 'reinforcement learning'],
+  include_package_data=True,
   install_requires=[
       'gsutil',
       'numpy'
