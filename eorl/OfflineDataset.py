@@ -155,7 +155,7 @@ class OfflineDataset:
 
 
     def _get_continuous_dataset(self, env):
-        fn = self.get_root_dir() / 'data' / f'{env}.expert_data.pkl'
+        fn = self.get_root_dir() / f'data/{env}.expert_data.pkl'
         with open(fn, 'rb') as f:
             return pkl.load(f)
 
