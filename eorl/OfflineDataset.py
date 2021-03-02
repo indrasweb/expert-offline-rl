@@ -36,8 +36,8 @@ class OfflineDataset:
 
         self._ds_max_size = 1e6 if self.env in self._env_list_atari else 1e5
 
-        assert type(dataset_size) == int and 0 < dataset_size <= self._ds_max_size, f'dataset_size must be in (0, {self._ds_max_size})'
-        self.dataset_size = dataset_size
+        assert 0 < dataset_size <= self._ds_max_size, f'dataset_size must be in (0, {self._ds_max_size})'
+        self.dataset_size = int(dataset_size)
 
         assert (framestack >= 1), 'framestack must be >= 1'
         self.framestack = framestack
