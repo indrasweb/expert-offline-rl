@@ -1,4 +1,4 @@
-## Expert Offline Atari RL Datasets
+## Expert Offline Reinforcement Learning Datasets
 
 A simple interface to [batch-rl](https://github.com/google-research/batch_rl). Expert data for all 60 Atari 2006 and 2 continuous control environments.
 
