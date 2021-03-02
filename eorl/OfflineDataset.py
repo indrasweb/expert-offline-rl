@@ -73,7 +73,10 @@ class OfflineDataset:
 
     @staticmethod
     def get_root_dir() -> Path:
-        return Path(__file__).resolve().parent.parent.absolute()
+        print(Path(__file__).resolve())
+        print(Path(__file__).resolve().parent)
+        print(Path(__file__))
+        return Path(__file__).resolve().parent
 
 
     @staticmethod
