@@ -1,6 +1,9 @@
 import os, gzip, subprocess
 import numpy as np
 from itertools import cycle
+import pickle as pkl
+from pathlib import Path
+
 
 class OfflineDataset:
 
@@ -25,14 +28,23 @@ class OfflineDataset:
                 verbose = 1              # 0 = silent, >0 for reporting
             )
         """
-        assert type(dataset_size) == int and 0 < dataset_size < 1e6, 'dataset_size must be in (0, 1e6)'
+        self._env_list_atari = self._list_atari_envs()
+        self._env_list_continuous = self._list_continuous_envs()
+        self._env_list = self._env_list_atari + self._env_list_continuous
+        assert env in self._env_list, f'\'env\' must be one of {self._env_list}'
+        self.env = env
+
+        self._ds_max_size = 1e6 if self.env in self._env_list_atari else 1e5
+
+        assert type(dataset_size) == int and 0 < dataset_size <= self._ds_max_size, f'dataset_size must be in (0, {self._ds_max_size})'
         self.dataset_size = dataset_size
 
         assert (framestack >= 1), 'framestack must be >= 1'
         self.framestack = framestack
 
         assert (0 <= train_split <= 1.), 'train_split must be in [0, 1.]'
-        self._split_ix = int(train_split*dataset_size)
+        self.train_size = int(train_split*dataset_size)
+        self.test_size = self.dataset_size - self.train_size
 
         assert obs_only in [True, False], 'obs_only must be true or false'
         self.obs_only = obs_only
@@ -45,23 +57,32 @@ class OfflineDataset:
 
         assert type(stride) == int and stride > 0, 'stride must be an int >0'
 
-        self._env_list = self._list_envs()
-        assert env in self._env_list, f'\'env\' must be one of {self._env_list}'
-        self.env = env
-
-        self.dataset = self._get_dataset(self.env)
+        if self.env in self._env_list_atari:
+            self.dataset = self._get_atari_dataset(self.env)
+        else:
+            self.dataset = self._get_continuous_dataset(self.env)
         self.dataset_size = len(self.dataset['observation'])
 
         if self.shuffle:
-            self._train_indices = self.random_chunks(np.arange(self._split_ix), framestack)
-            self._test_indices = self.random_chunks(np.arange(self._split_ix, self.dataset_size), framestack)
+            self._train_indices = self.random_chunks(np.arange(self.train_size), framestack)
+            self._test_indices = self.random_chunks(np.arange(self.train_size, self.dataset_size), framestack)
         else:
-            self._train_indices = self.rolling_chunks(np.arange(self._split_ix), framestack, stride)
-            self._test_indices = self.rolling_chunks(np.arange(self._split_ix, self.dataset_size), framestack, stride)
+            self._train_indices = self.rolling_chunks(np.arange(self.train_size), framestack, stride)
+            self._test_indices = self.rolling_chunks(np.arange(self.train_size, self.dataset_size), framestack, stride)
 
 
     @staticmethod
-    def _list_envs():
+    def get_root_dir() -> Path:
+        return Path(__file__).resolve().parent.parent.absolute()
+
+
+    @staticmethod
+    def _list_continuous_envs():
+        return ['LunarLanderContinuous-v2', 'MountainCarContinuous-v0']
+
+
+    @staticmethod
+    def _list_atari_envs():
         stdout, stderr = subprocess.Popen(
             ['gsutil', 'ls', 'gs://atari-replay-datasets/dqn'],
             stdout=subprocess.PIPE,
@@ -101,7 +122,7 @@ class OfflineDataset:
         return cp
 
 
-    def _get_dataset(self, env):
+    def _get_atari_dataset(self, env):
         """ download batch-rl data to /.data if it doesn't already exist """
         want = ['observation'] if self.obs_only else ['observation', 'action', 'reward', 'terminal']
         fns = [f'./data/{env}/$store$_{x}_ckpt.50.gz' for x in want]
@@ -133,6 +154,12 @@ class OfflineDataset:
             raise Exception(f'gsutil download for {env} failed: \n{stdout}\n{stderr}')
 
 
+    def _get_continuous_dataset(self, env):
+        fn = self.get_root_dir() / 'data' / f'{env}.expert_data.pkl'
+        with open(fn, 'rb') as f:
+            return pkl.load(f)
+
+
     def batch(self, batch_size=128, split='train'):
         """
             obs, acts, rwds, dones, next_obs = ds.batch(
@@ -161,6 +188,7 @@ class OfflineDataset:
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     ds = OfflineDataset('Pong', dataset_size=100000, framestack=4)
+    # ds = OfflineDataset('LunarLanderContinuous-v2', dataset_size=100000, framestack=4)
     obs, actions, rewards, dones, next_obs = ds.batch()
     print('obs', obs.shape)
     print('actions', actions.shape)
@@ -171,4 +199,3 @@ if __name__ == '__main__':
     for i in range(4):
         plt.imshow(np.concatenate((obs[0, i, :, :], next_obs[0, i, :, :])))
         plt.show()
-
