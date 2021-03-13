@@ -78,7 +78,7 @@ class OfflineDataset:
 
     @staticmethod
     def _list_continuous_envs():
-        return ['LunarLanderContinuous-v2', 'MountainCarContinuous-v0']
+        return ['LunarLanderContinuous-v2', 'MountainCarContinuous-v0', 'BipedalWalker-v3']
 
 
     @staticmethod
