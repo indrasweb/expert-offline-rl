@@ -34,6 +34,7 @@ Continuous control environments (Box2D) - 100k expert steps of each:
 ```
 LunarLanderContinuous-v2
 MountainCarContinuous-v0
+BipedalWalker-v3
 ```
 
 All Atari 2006 environments (Discrete)- 1 million steps of each. 
