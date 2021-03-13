@@ -1,4 +1,4 @@
-## Expert Offline Atari RL Datasets
+## Expert Offline Reinforcement Learning Datasets
 
 A simple interface to [batch-rl](https://github.com/google-research/batch_rl). Expert data for all 60 Atari 2006 and 2 continuous control environments.
 
@@ -25,7 +25,7 @@ ds = OfflineDataset(
 obs, actions, rewards, dones, next_obs = ds.batch(batch_size=128, shuffle=False)
 ```
 
-Dataset is loaded into memory. Large `dataset_size` needs large amount of memory. Use ~400k in Colab.
+Dataset is loaded into memory. Large `dataset_size` needs large amount of memory. Use <400k in Colab.
 
 ### Supported Environments
 
