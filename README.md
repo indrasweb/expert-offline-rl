@@ -14,7 +14,7 @@ $ pip install git+https://github.com/indrasweb/expert-offline-rl.git
 from eorl import OfflineDataset
 
 ds = OfflineDataset(
-    env = 'Pong',            #  pass name in `supported environments` below
+    env = 'Pong',            # pass name in `supported environments` below
     dataset_size = 500000,   # [0, 1e6) frames of atari
     train_split = 0.9,       # 90% training, 10% held out for testing
     obs_only = False,        # only get observations (no actions, rewards, dones)
