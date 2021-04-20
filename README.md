@@ -13,16 +13,18 @@ $ pip install git+https://github.com/indrasweb/expert-offline-rl.git
 ```python
 from eorl import OfflineDataset
 
-
 ds = OfflineDataset(
-    env = 'Pong',            # pass name in `supported environments` below
-    dataset_size = 200000,   # [0, 1e7) frames of atari
+    env = 'Pong',            #  pass name in `supported environments` below
+    dataset_size = 500000,   # [0, 1e6) frames of atari
     train_split = 0.9,       # 90% training, 10% held out for testing
     obs_only = False,        # only get observations (no actions, rewards, dones)
+    framestack = 1,          # number of frames per sample
+    shuffle = False          # chronological samples if False, randomly sampled if true
+    stride = 1               # return every stride`th chunk (where chunk size == `framestack)
     verbose = 1              # 0 = silent, >0 for reporting
 )
 
-obs, actions, rewards, dones, next_obs = ds.batch(batch_size=128, shuffle=False)
+obs, actions, rewards, dones, next_obs = ds.batch(batch_size=128, split='train')
 ```
 
 Dataset is loaded into memory. Large `dataset_size` needs large amount of memory. Use <400k in Colab.
